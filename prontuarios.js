@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-/* Variáveis para cores */
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof pdfjsLib !== 'undefined') {
         pdfjsLib.GlobalWorkerOptions.workerSrc = './build/pdf.worker.mjs';
@@ -18,6 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const pdfModal = document.getElementById('pdfModal');
     const pdfViewerIframe = document.getElementById('pdfViewerIframe');
     const closePdfModal = document.getElementById('closePdfModal');
+
+    // Referência ao container da imagem
+    const bottomLeftImageContainer = document.getElementById('bottomLeftImageContainer');
 
 
     const newRecordButton = document.getElementById('newRecordButton');
@@ -70,12 +72,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Funções de Conversão ---
     function dataURLToBlob(dataurl) {
         const arr = dataurl.split(',');
-        const mime = arr[[0]].match(/:(.*?);/)[[1]];
-        const bstr = atob(arr[[1]]);
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
         let n = bstr.length;
         const u8arr = new Uint8Array(n);
         while (n--) {
-            u8arr[[n]] = bstr.charCodeAt(n);
+            u8arr[n] = bstr.charCodeAt(n);
         }
         return new Blob([u8arr], { type: mime });
     }
@@ -84,7 +86,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const showContainer = (container) => {
         const allContainers = [recordListContainer, recordFormContainer, recordDetailContainer, followUpFormContainer];
         allContainers.forEach(c => c.style.display = 'none');
+        
+        // Esconde a imagem por padrão
+        if (bottomLeftImageContainer) {
+            bottomLeftImageContainer.style.display = 'none';
+        }
+
         container.style.display = 'block';
+
+        // Se o container exibido for o da lista de prontuários, mostra a imagem
+        if (container === recordListContainer && bottomLeftImageContainer) {
+            bottomLeftImageContainer.style.display = 'block';
+        }
     };
 
     const showList = () => {
@@ -230,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `<div class="record-item-info">
                     <h3>${record.patientName}</h3>
                     <p><strong>Atendimento:</strong> ${formatDate(record.appointmentDate)} | <strong>Modificado:</strong> ${record.lastModified}</p>
-                    <p>${record.recordRelate ? record.recordRelate.substring(0, 100) + '...' : 'Sem relato inicial.'}</p>
+                    <p>${record.recordRelate ? (record.recordRelate.length > 100 ? record.recordRelate.substring(0, 100) + '...' : record.recordRelate) : 'Sem relato inicial.'}</p>
                     ${record.pdfFileName ? `<p style="font-style: italic; color: #666;"><small>PDF Anexado: ${record.pdfFileName}</small></p>` : ''}
                 </div>
                 <div class="record-item-actions">
@@ -523,7 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listener para o input de arquivo do prontuário principal
     pdfUploadInput.addEventListener('change', (event) => {
-        const file = event.target.files[[0]];
+        const file = event.target.files[0];
         if (file && file.type === 'application/pdf') {
             selectedPdfFile = file;
             fileNameDisplay.textContent = `Arquivo selecionado: ${file.name}`;
@@ -537,7 +550,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listener para o input de arquivo do acompanhamento
     followUpPdfUploadInput.addEventListener('change', (event) => {
-        const file = event.target.files[[0]];
+        const file = event.target.files[0];
         if (file && file.type === 'application/pdf') {
             selectedFollowUpPdfFile = file;
             followUpFileNameDisplay.textContent = `Arquivo selecionado: ${file.name}`;
@@ -551,5 +564,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Inicialização
     loadProntuarios();
-    renderProntuarios();
+    showList(); // Garante que a lista e a imagem sejam mostradas na carga inicial
 });
