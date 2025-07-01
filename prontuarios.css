@@ -1,0 +1,723 @@
+/* Variáveis para cores */
+:root {
+    --primary-orange: #FF8C00; /* Laranja principal */
+    --light-orange: #FFA500; /* Laranja mais claro para hover */
+    --dark-orange: #CC7000; /* Laranja mais escuro */
+    --white: #FFFFFF;
+    --light-grey: #f0f2f5; /* Fundo suave para o body */
+    --medium-grey: #e0e0e0; /* Bordas, linhas divisórias sutis */
+    --dark-grey: #333333; /* Textos principais, títulos */
+    --text-color: #555555; /* Cor de texto padrão */
+    --border-color: #ddd; /* Bordas de inputs */
+    --focus-shadow: 0 0 0 3px rgba(255, 140, 0, 0.2); /* Sombra no foco */
+    --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.08); /* Sombra suave para caixas */
+}
+
+/* Estilos globais */
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--light-grey);
+    color: var(--text-color);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Container principal para o conteúdo */
+.main-content {
+    flex-grow: 1;
+    max-width: 900px; /* Limita a largura para melhor leitura */
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Header */
+.main-header {
+    background-color: var(--primary-orange);
+    color: var(--white);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-light);
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.header-profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--white);
+    object-fit: cover;
+}
+
+#headerUsername {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.logout-button {
+    background-color: var(--dark-orange);
+    color: var(--white);
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-weight: 600;
+}
+
+.logout-button:hover {
+    background-color: #b35f00; /* Um laranja mais escuro ainda */
+    transform: translateY(-2px);
+}
+
+/* Estilo para todos os contêineres principais (lista, formulário, detalhes) */
+.record-list-container,
+.record-form-container,
+.record-detail-container,
+.followup-form-container {
+    background-color: var(--white);
+    padding: 2.5rem;
+    border-radius: 10px;
+    box-shadow: var(--shadow-light);
+    margin-bottom: 2rem;
+}
+
+h2 {
+    color: var(--dark-grey);
+    font-size: 1.8rem;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--primary-orange);
+    padding-bottom: 0.5rem;
+    display: inline-block;
+}
+
+/* Formulários */
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-weight: 600;
+    color: var(--dark-grey);
+    font-size: 0.95rem;
+}
+
+input[type="text"],
+input[type="date"],
+textarea,
+select { /* Adicionei o select aqui também */
+    font-family: inherit; /* Garante que a fonte seja herdada do body */
+    width: 100%;
+    padding: 0.9rem 1.2rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    color: var(--dark-grey);
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    resize: vertical; /* Permite redimensionar verticalmente textareas */
+}
+
+/* Estilo específico para input type="file" */
+input[type="file"] {
+    padding: 0.8rem; /* Um pouco menos de padding para file input */
+    background-color: #f8f8f8;
+    cursor: pointer;
+}
+
+input[type="file"]::-webkit-file-upload-button {
+    background-color: var(--primary-orange);
+    color: var(--white);
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-right: 15px;
+}
+
+input[type="file"]::-webkit-file-upload-button:hover {
+    background-color: var(--light-orange);
+}
+
+textarea {
+    min-height: 100px; /* Altura mínima para o prontuário */
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--primary-orange);
+    outline: none;
+    box-shadow: var(--focus-shadow);
+}
+
+/* Botões de Ação no Formulário */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    justify-content: flex-end; /* Alinha botões à direita */
+}
+
+.save-button,
+.new-record-button,
+.add-followup-button {
+    background-color: var(--primary-orange);
+    color: var(--white);
+    border: none;
+    padding: 0.9rem 1.8rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-weight: 600;
+}
+
+.save-button:hover,
+.new-record-button:hover,
+.add-followup-button:hover {
+    background-color: var(--light-orange);
+    transform: translateY(-2px);
+}
+
+.cancel-button,
+.back-button,
+.delete-button {
+    background-color: var(--medium-grey);
+    color: var(--dark-grey);
+    border: none;
+    padding: 0.9rem 1.8rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-weight: 600;
+}
+
+.cancel-button:hover,
+.back-button:hover,
+.delete-button:hover {
+    background-color: #c9c9c9;
+    transform: translateY(-2px);
+}
+
+.delete-button {
+    background-color: #dc3545; /* Vermelho para exclusão */
+    color: var(--white);
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+}
+
+/* Lista de Prontuários */
+.record-list-container {
+    text-align: center; /* Centraliza o cabeçalho e o botão inicialmente */
+}
+
+.record-list-container h2 {
+    display: block; /* Para o h2 não ficar inline-block */
+    text-align: left; /* Ajusta o alinhamento de volta */
+}
+
+.sort-options {
+    text-align: right; /* Alinha o seletor de ordenação à direita */
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Alinha label e select */
+    gap: 0.8rem;
+    font-size: 0.95rem;
+    color: var(--dark-grey);
+}
+
+.sort-options select {
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--white);
+    font-size: 0.95rem;
+    color: var(--dark-grey);
+    cursor: pointer;
+    appearance: none; /* Remove seta padrão do select */
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FF8C00%22%20d%3D%22M287%2C114.3L146.2%2C255.1L5.4%2C114.3h281.6z%22%2F%3E%3C%2Fsvg%3E'); /* Seta laranja personalizada */
+    background-repeat: no-repeat;
+    background-position: right 0.7em top 50%, 0 0;
+    background-size: 0.65em auto, 100%;
+}
+
+#recordsList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.record-item {
+    background-color: var(--white);
+    border: 1px solid var(--medium-grey);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.record-item:hover {
+    background-color: var(--light-grey);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+}
+
+.record-item-info {
+    flex-grow: 1;
+    text-align: left;
+}
+
+.record-item-info h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--primary-orange);
+    font-size: 1.3rem;
+}
+
+.record-item-info p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    word-wrap: break-word; /* Added for text wrapping */
+}
+
+.record-item-info p strong {
+    color: var(--dark-grey);
+}
+
+.record-item-actions {
+    display: flex;
+    gap: 0.8rem;
+}
+
+.no-records-message {
+    text-align: center;
+    color: var(--text-color);
+    padding: 2rem;
+    font-style: italic;
+    font-size: 1.1rem;
+    background-color: var(--white);
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Detalhes do Prontuário */
+.record-detail-container h2 {
+    border-bottom: none; /* Remove a linha do H2 principal aqui */
+    padding-bottom: 0;
+}
+
+.detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.detail-header h2 {
+    margin: 0;
+    font-size: 2rem;
+    color: var(--primary-orange);
+}
+
+.record-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.record-detail-container p {
+    margin-bottom: 1rem;
+    font-size: 1.05rem;
+}
+
+.record-detail-container p strong {
+    color: var(--dark-grey);
+}
+
+.record-detail-container h3 {
+    color: var(--dark-grey);
+    font-size: 1.3rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--medium-grey);
+    padding-bottom: 0.5rem;
+}
+
+.separator {
+    border: 0;
+    height: 1px;
+    background: var(--medium-grey);
+    margin: 2rem 0;
+}
+
+/* ======================================= */
+/* MODIFICADO: Estilo para a lista de acompanhamentos */
+/* ======================================= */
+.followups-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* MODIFICADO: Estilo para cada item de acompanhamento */
+.followup-item {
+    background-color: var(--light-grey);
+    border-left: 5px solid var(--primary-orange);
+    border-radius: 5px;
+    padding: 0.6rem 1.5rem; /* <<<-- AQUI ESTÁ A ALTERAÇÃO: Padding vertical reduzido */
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    word-wrap: break-word;
+    
+    /* Propriedades de Flexbox para alinhar conteúdo e ações */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px; /* Ajustei o espaçamento entre o conteúdo e os botões */
+}
+
+.followup-item:hover {
+    background-color: #e8e8e8;
+}
+
+.followup-item strong {
+    color: var(--dark-grey);
+}
+
+/* MODIFICADO: Container para a data e o link/texto */
+/* Adicionei 'gap: 5px' aqui para aproximar a data e o link */
+.followup-content-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* <<<-- AQUI ESTÁ A ALTERAÇÃO: Espaçamento entre data e link */
+    flex-grow: 1; /* Permite que este container cresça para preencher o espaço */
+    padding-left: 0.2rem; /* <<<-- Traz o conteúdo para mais perto da borda laranja */
+    min-width: 0;
+}
+
+/* Estilo para a data do acompanhamento */
+.followup-date-display {
+    font-weight: 600;
+    color: var(--dark-grey);
+    white-space: nowrap; /* Impede quebra de linha na data */
+    flex-shrink: 0; /* Impede que a data encolha */
+}
+
+/* Botões de ação dentro do detalhe/listagem */
+.action-button {
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-weight: 600;
+}
+
+/* Container para as ações (botão PDF e Excluir) */
+.followup-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0; /* Impede que o container de ações encolha */
+}
+
+/* Estilo para o link do PDF clicável na lista de acompanhamentos */
+.view-followup-pdf {
+    display: inline-block;
+    cursor: pointer;
+    text-decoration: underline;
+    color: var(--primary-orange);
+    font-weight: 600;
+    font-size: 0.9em;
+    white-space: nowrap; /* Impede quebra de linha */
+    transition: color 0.3s ease;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.view-followup-pdf:hover {
+    color: var(--dark-orange);
+}
+
+/* Estilo para o botão de exclusão */
+.delete-followup-button {
+    background-color: #dc3545; /* Vermelho para exclusão */
+    color: var(--white);
+    border: none;
+    padding: 8px; /* Padding igual em todos os lados para o ícone */
+    border-radius: 50%; /* Faz o botão circular */
+    width: 35px; /* Largura e altura fixas para o círculo */
+    height: 35px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.delete-followup-button:hover {
+    background-color: #c82333;
+    transform: scale(1.1);
+}
+
+.delete-followup-button svg {
+    width: 18px; /* Tamanho do ícone */
+    height: 18px;
+}
+
+/* Modal */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 10; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: var(--white);
+    margin: auto;
+    padding: 2.5rem;
+    border-radius: 10px;
+    box-shadow: var(--shadow-light);
+    width: 80%;
+    max-width: 600px;
+    position: relative; /* For close button positioning */
+    max-height: 80vh; /* Added: Maximum height of the modal content */
+    overflow-y: auto; /* Added: Enable vertical scrolling if content exceeds max-height */
+}
+
+.modal-content p {
+    white-space: pre-wrap; /* Added: Preserve whitespace and line breaks for modal text */
+    word-wrap: break-word; /* Added: Ensure long words break */
+}
+
+.close-button {
+    color: var(--dark-grey);
+    font-size: 2rem;
+    font-weight: bold;
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: var(--primary-orange);
+    text-decoration: none;
+}
+
+/* Ações na parte inferior dos formulários */
+.bottom-actions {
+    justify-content: flex-start; /* Alinha à esquerda, para o botão "Voltar" */
+}
+
+/* Estilo para o link do PDF (opcional, para combinar com o tema) */
+#pdfLink:hover {
+    color: var(--dark-orange);
+    text-decoration: underline;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .main-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .main-content {
+        padding: 0 1rem;
+        margin: 1rem auto;
+    }
+
+    .record-list-container,
+    .record-form-container,
+    .record-detail-container,
+    .followup-form-container {
+        padding: 1.5rem;
+    }
+
+    .sort-options {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .record-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.8rem;
+    }
+
+    .record-item-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .detail-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .record-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+
+    .save-button,
+    .new-record-button,
+    .cancel-button,
+    .back-button,
+    .delete-button,
+    .add-followup-button {
+        width: 100%;
+        padding: 0.8rem;
+    }
+
+    /* MODIFICADO: Responsividade para a lista de acompanhamentos */
+    .followup-item {
+        flex-direction: column; /* Empilha o conteúdo e as ações */
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
+
+/* Animação de fade-in para mostrar/ocultar containers */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animated-show {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animated-hide {
+    animation: fadeOut 0.5s ease-out forwards;
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+}
+
+/* Estilos específicos para o botão de ver PDF */
+.view-pdf-button {
+    background-color: var(--primary-orange);
+    color: var(--white);
+    padding: 0.7rem 1.4rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-weight: 600;
+}
+
+.view-pdf-button:hover {
+    background-color: var(--light-orange);
+    transform: translateY(-2px);
+}
+
+/* Estilos para o modal do PDF */
+.pdf-viewer-modal-content {
+    max-width: 90%; /* Ajuste a largura máxima do modal */
+    width: 90%;
+    height: 90vh; /* Ocupa a maior parte da altura da viewport */
+    padding: 1.5rem; /* Ajuste o padding se necessário */
+    box-sizing: border-box; /* Garante que padding e borda não aumentem a dimensão total */
+    display: flex;
+    flex-direction: column;
+}
+
+.pdf-viewer-modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--medium-grey);
+    padding-bottom: 0.5rem;
+}
+
+#pdfViewerIframe {
+    flex-grow: 1; /* Faz o iframe ocupar o espaço restante verticalmente */
+    border: 1px solid var(--medium-grey);
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+/* Ajustes de responsividade para o modal do PDF */
+@media (max-width: 768px) {
+    .pdf-viewer-modal-content {
+        max-width: 95%;
+        width: 95%;
+        height: 95vh;
+        padding: 1rem;
+    }
+}
+
+/* Estilo para o container da foto no canto inferior esquerdo */
+.fixed-bottom-left-image {
+    position: fixed; /* Fixa o elemento na tela, mesmo com rolagem */
+    bottom: 20px; /* 20 pixels da parte inferior da tela */
+    left: 20px; /* 20 pixels da parte esquerda da tela */
+    z-index: 1000; /* Garante que a imagem fique na frente de outros elementos */
+}
+
+.fixed-bottom-left-image img {
+    width: 150px; /* Largura da imagem (ajuste conforme necessário) */
+    height: auto; /* Mantém a proporção */
+    border-radius: 10px; /* Borda arredondada */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra para destaque */
+}
