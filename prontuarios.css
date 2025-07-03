@@ -716,7 +716,7 @@ select:focus {
 }
 
 .fixed-bottom-left-image img {
-    width: 150px; /* Largura da imagem (ajuste conforme necessário) */
+    width: 230px; /* Largura da imagem (ajuste conforme necessário) */
     height: auto; /* Mantém a proporção */
     border-radius: 10px; /* Borda arredondada */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra para destaque */
