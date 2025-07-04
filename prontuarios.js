@@ -1,12 +1,13 @@
 /* eslint-disable no-unused-vars */
 document.addEventListener('DOMContentLoaded', () => {
+    // Check if PDF.js library is loaded
     if (typeof pdfjsLib !== 'undefined') {
         pdfjsLib.GlobalWorkerOptions.workerSrc = './build/pdf.worker.mjs';
     } else {
         console.error('PDF.js library not loaded. Please check the <script> tag in your HTML file.');
     }
 
-    // Referências aos elementos HTML
+    // --- DOM Element References ---
     const headerUsername = document.getElementById('headerUsername');
 
     const recordListContainer = document.getElementById('recordListContainer');
@@ -18,9 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const pdfViewerIframe = document.getElementById('pdfViewerIframe');
     const closePdfModal = document.getElementById('closePdfModal');
 
-    // Referência ao container da imagem
+    // Reference to the bottom-left image container
     const bottomLeftImageContainer = document.getElementById('bottomLeftImageContainer');
-
 
     const newRecordButton = document.getElementById('newRecordButton');
     const saveRecordButton = document.getElementById('saveRecordButton');
@@ -36,11 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const recordRelateInput = document.getElementById('recordRelate');
     const appointmentDateInput = document.getElementById('appointmentDate');
     const medicalRecordInput = document.getElementById('medicalRecord');
-    
-    // Antigo pdfUploadInput e fileNameDisplay
+
     const pdfUploadInput = document.getElementById('pdfUpload');
-    // NOVO: Elemento para exibir nomes de múltiplos arquivos do registro principal
-    const selectedRecordPdfsDisplay = document.getElementById('selectedRecordPdfsDisplay'); 
+    const selectedRecordPdfsDisplay = document.getElementById('selectedRecordPdfsDisplay');
 
     const sortOrderSelect = document.getElementById('sortOrder');
     const recordsList = document.getElementById('recordsList');
@@ -50,11 +48,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const detailAppointmentDate = document.getElementById('detailAppointmentDate');
     const detailRecordRelate = document.getElementById('detailRecordRelate');
     const detailMedicalRecord = document.getElementById('detailMedicalRecord');
-    
-    // Antigos viewPdfButton e noPdfMessage
-    const pdfsDisplayArea = document.getElementById('pdfsDisplayArea'); // Novo container para listar PDFs do registro
-    const recordPdfsList = document.getElementById('recordPdfsList'); // UL para listar os PDFs do registro
-    const noRecordPdfsMessage = document.getElementById('noRecordPdfsMessage'); // Mensagem se não houver PDFs
+
+    const pdfsDisplayArea = document.getElementById('pdfsDisplayArea');
+    const recordPdfsList = document.getElementById('recordPdfsList');
+    const noRecordPdfsMessage = document.getElementById('noRecordPdfsMessage');
 
     const followUpsList = document.getElementById('followUpsList');
     const noFollowUpsMessage = document.querySelector('.no-followups-message');
@@ -65,24 +62,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalFollowUpDate = document.getElementById('modalFollowUpDate');
     const modalFollowUpText = document.getElementById('modalFollowUpText');
 
-    // Referências para o upload de PDF no formulário de acompanhamento
     const followUpPdfUploadInput = document.getElementById('followUpPdfUpload');
-    // NOVO: Elemento para exibir nomes de múltiplos arquivos do acompanhamento
-    const selectedFollowUpPdfsDisplay = document.getElementById('selectedFollowUpPdfsDisplay'); 
+    const selectedFollowUpPdfsDisplay = document.getElementById('selectedFollowUpPdfsDisplay');
 
-    // MODIFICAÇÃO CHAVE: Variáveis para armazenar múltiplos arquivos
-    let currentRecordPdfFiles = []; // Array para FileList do registro principal
-    let currentFollowupPdfFiles = []; // Array para FileList do acompanhamento
+    // --- State Variables ---
+    let currentRecordPdfFiles = []; // Array for FileList of the main record
+    let currentFollowupPdfFiles = []; // Array for FileList of the follow-up
 
     let prontuarios = [];
     let currentRecordId = null;
     let currentPatientName = '';
-    
-    // Remover selectedPdfFile e selectedFollowUpPdfFile, pois agora usamos arrays
 
-    const currentUser = "Luciana Viana";
+    const currentUser = "Luciana Viana"; // Hardcoded user for local storage key
 
-    // --- Funções de Conversão ---
+    // --- Helper Functions ---
+
+    // Converts a Data URL to a Blob object
     function dataURLToBlob(dataurl) {
         const arr = dataurl.split(',');
         const mime = arr[0].match(/:(.*?);/)[1];
@@ -95,22 +90,51 @@ document.addEventListener('DOMContentLoaded', () => {
         return new Blob([u8arr], { type: mime });
     }
 
-    // --- Funções de Exibição/Ocultação de Containers ---
+    // Formats a date string from YYYY-MM-DD to DD/MM/YYYY
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        const [year, month, day] = dateString.split('-');
+        return `${day}/${month}/${year}`;
+    };
+
+    // Generates a unique ID
+    const generateId = () => '_' + Math.random().toString(36).substr(2, 9);
+
+    // --- Container Display/Hide Functions ---
+
+    // Hides all main content containers and shows the specified one
     const showContainer = (container) => {
         const allContainers = [recordListContainer, recordFormContainer, recordDetailContainer, followUpFormContainer];
-        allContainers.forEach(c => c.style.display = 'none');
-        
-        // Esconde a imagem por padrão
+        allContainers.forEach(c => {
+            if (c.style.display === 'block') {
+                c.classList.remove('animated-show');
+                c.classList.add('animated-hide');
+                c.addEventListener('animationend', function handler() {
+                    c.style.display = 'none';
+                    c.classList.remove('animated-hide');
+                    c.removeEventListener('animationend', handler);
+                }, { once: true }); // Use once: true to remove listener after first animation
+            } else {
+                c.style.display = 'none';
+                c.classList.remove('animated-show', 'animated-hide');
+            }
+        });
+
+        // Hide the bottom-left image by default when switching containers
         if (bottomLeftImageContainer) {
             bottomLeftImageContainer.style.display = 'none';
         }
 
-        container.style.display = 'block';
+        // Slight delay to allow hide animation to start (optional, can be adjusted)
+        setTimeout(() => {
+            container.style.display = 'block';
+            container.classList.add('animated-show');
 
-        // Se o container exibido for o da lista de prontuários, mostra a imagem
-        if (container === recordListContainer && bottomLeftImageContainer) {
-            bottomLeftImageContainer.style.display = 'block';
-        }
+            // Show the image only if the record list is visible
+            if (container === recordListContainer && bottomLeftImageContainer) {
+                bottomLeftImageContainer.style.display = 'block';
+            }
+        }, 50); // Small delay
     };
 
     const showList = () => {
@@ -121,14 +145,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const showNewRecordForm = () => {
         patientNameInput.value = '';
         recordRelateInput.value = '';
-        appointmentDateInput.value = new Date().toISOString().split('T')[0];
+        appointmentDateInput.value = new Date().toISOString().split('T')[0]; // Set today's date
         medicalRecordInput.value = '';
-        
-        // MODIFICADO: Resetar inputs de arquivo e exibições
+
+        // Reset PDF inputs and displays
         pdfUploadInput.value = '';
         selectedRecordPdfsDisplay.textContent = '';
-        currentRecordPdfFiles = []; // Limpa o array de arquivos
-        
+        currentRecordPdfFiles = []; // Clear the file array
+
         currentRecordId = null;
         showContainer(recordFormContainer);
     };
@@ -142,9 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
         detailRecordRelate.textContent = record.recordRelate || 'N/A';
         detailMedicalRecord.textContent = record.medicalRecord || 'Não preenchido.';
 
-        // MODIFICADO: Lógica para exibir múltiplos PDFs do registro principal
-        renderRecordPdfs(record.recordPdfs); // Nova função para renderizar múltiplos PDFs do registro
-
+        renderRecordPdfs(record.recordPdfs);
         renderFollowUps(record.followUps);
         showContainer(recordDetailContainer);
     };
@@ -158,24 +180,24 @@ document.addEventListener('DOMContentLoaded', () => {
         followUpPatientNameTitle.textContent = `Novo Acompanhamento para ${currentPatientName}`;
         followUpDateInput.value = new Date().toISOString().split('T')[0];
         followUpTextarea.value = '';
-        
-        // MODIFICADO: Limpa o campo de upload de PDF do acompanhamento e exibições
+
+        // Clear PDF upload field and display
         followUpPdfUploadInput.value = '';
         selectedFollowUpPdfsDisplay.textContent = '';
-        currentFollowupPdfFiles = []; // Limpa o array de arquivos
-        
+        currentFollowupPdfFiles = []; // Clear the file array
+
         showContainer(followUpFormContainer);
     };
 
     const showFollowUpModal = (date, text, pdfs) => {
         modalFollowUpDate.textContent = `Acompanhamento de: ${date}`;
-        modalFollowUpText.innerHTML = text; // Usar innerHTML para permitir o botão/links
+        modalFollowUpText.innerHTML = text; // Use innerHTML to allow buttons/links
 
-        // Limpa qualquer botão de PDF anterior no modal
+        // Clear any previous PDF buttons in the modal
         const existingPdfButtons = modalFollowUpText.querySelectorAll('.view-pdf-button');
         existingPdfButtons.forEach(btn => btn.remove());
 
-        // Se houver PDFs no acompanhamento, adiciona um botão para visualizá-los no modal
+        // If there are PDFs in the follow-up, add buttons to view them in the modal
         if (pdfs && pdfs.length > 0) {
             pdfs.forEach(pdf => {
                 const viewPdfInModalButton = document.createElement('button');
@@ -188,9 +210,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                                     <polyline points="10 9 9 9 8 9"></polyline>
                                                 </svg> ${pdf.fileName}`;
                 viewPdfInModalButton.style.marginTop = '10px';
-                viewPdfInModalButton.style.marginRight = '10px'; // Espaçamento entre botões se houver múltiplos
+                viewPdfInModalButton.style.marginRight = '10px';
                 viewPdfInModalButton.onclick = (e) => {
-                    e.stopPropagation(); // Evita que o clique feche o modal pai
+                    e.stopPropagation(); // Prevents clicking this button from closing the parent modal
                     openPdfModal(pdf.dataUrl);
                 };
                 modalFollowUpText.appendChild(viewPdfInModalButton);
@@ -199,10 +221,9 @@ document.addEventListener('DOMContentLoaded', () => {
         followUpModal.style.display = 'flex';
     };
 
-
     const hideFollowUpModal = () => {
         followUpModal.style.display = 'none';
-        // Limpa o botão de PDF do modal para o próximo acompanhamento
+        // Clear PDF button from the modal for the next follow-up
         const viewPdfInModalButtons = followUpModal.querySelectorAll('.view-pdf-button');
         viewPdfInModalButtons.forEach(btn => btn.remove());
     };
@@ -220,19 +241,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const closePdfModalHandler = () => {
         pdfModal.style.display = 'none';
         const currentSrc = pdfViewerIframe.src;
-        pdfViewerIframe.src = '';
+        pdfViewerIframe.src = ''; // Clear iframe src
         if (currentSrc.startsWith('blob:')) {
-            URL.revokeObjectURL(currentSrc);
+            URL.revokeObjectURL(currentSrc); // Revoke blob URL to free memory
         }
     };
 
-    // --- Gerenciamento de Dados (LocalStorage) por usuário ---
+    // --- Data Management (LocalStorage) per user ---
+
+    const USER_LOCAL_STORAGE_KEY = `prontuariosApp_${currentUser}Prontuarios`;
+
     const getProntuariosForCurrentUser = () => {
-        return JSON.parse(localStorage.getItem('prontuariosApp_LucianaVianaProntuarios') || '[]');
+        return JSON.parse(localStorage.getItem(USER_LOCAL_STORAGE_KEY) || '[]');
     };
 
     const saveProntuariosForCurrentUser = (userProntuarios) => {
-        localStorage.setItem('prontuariosApp_LucianaVianaProntuarios', JSON.stringify(userProntuarios));
+        localStorage.setItem(USER_LOCAL_STORAGE_KEY, JSON.stringify(userProntuarios));
     };
 
     const loadProntuarios = () => {
@@ -243,12 +267,16 @@ document.addEventListener('DOMContentLoaded', () => {
         saveProntuariosForCurrentUser(prontuarios);
     };
 
-    // --- Funções de Renderização ---
+    // --- Rendering Functions ---
+
     const renderProntuarios = () => {
         recordsList.innerHTML = '';
 
         if (prontuarios.length === 0) {
-            recordsList.appendChild(noRecordsMessage);
+            // Ensure message is appended if not already, and displayed
+            if (!recordsList.contains(noRecordsMessage)) {
+                recordsList.appendChild(noRecordsMessage);
+            }
             noRecordsMessage.style.display = 'block';
             return;
         } else {
@@ -262,29 +290,33 @@ document.addEventListener('DOMContentLoaded', () => {
             li.className = 'record-item';
             li.dataset.id = record.id;
 
-            // Adaptação para múltiplos PDFs no item da lista (mostrar apenas count ou nomes parciais)
-            const pdfInfo = record.recordPdfs && record.recordPdfs.length > 0
-                ? `<p style="font-style: italic; color: #666;"><small>PDF(s) Anexado(s): ${record.recordPdfs.length} arquivo(s)</small></p>`
-                : '';
+            // Prepare summary for initial symptom, truncating if too long
+            const initialSymptomSummary = record.recordRelate
+                ? (record.recordRelate.length > 100 ? record.recordRelate.substring(0, 100) + '...' : record.recordRelate)
+                : 'Sem sintoma inicial.';
 
+            // --- MODIFIED: Simplified display on main list ---
             li.innerHTML =
                 `<div class="record-item-info">
                     <h3>${record.patientName}</h3>
-                    <p><strong>Atendimento:</strong> ${formatDate(record.appointmentDate)} | <strong>Modificado:</strong> ${record.lastModified}</p>
-                    <p>${record.recordRelate ? (record.recordRelate.length > 100 ? record.recordRelate.substring(0, 100) + '...' : record.recordRelate) : 'Sem relato inicial.'}</p>
-                    ${pdfInfo}
+                    <p><strong>Início:</strong> ${formatDate(record.appointmentDate)}</p>
+                    <p><strong>Sintoma Inicial:</strong> ${initialSymptomSummary}</p>
                 </div>
                 <div class="record-item-actions">
                     <button class="action-button view-button" data-id="${record.id}">Ver Detalhes</button>
                     <button class="action-button delete-record-item-button" data-id="${record.id}">Excluir</button>
                 </div>`;
+            // --- END MODIFIED ---
 
             recordsList.appendChild(li);
         });
 
+        // Event delegation for view and delete buttons on the list
+        // Attaching listeners here means they are re-attached every render, which is fine for small lists
+        // For very large lists, consider delegating to `recordsList` directly.
         document.querySelectorAll('.view-button').forEach(button => {
-            button.onclick = (e) => {
-                const id = e.target.dataset.id;
+            button.onclick = ({ target }) => {
+                const id = target.dataset.id;
                 const record = prontuarios.find(p => p.id === id);
                 if (record) {
                     showRecordDetails(record);
@@ -294,16 +326,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.querySelectorAll('.delete-record-item-button').forEach(button => {
             button.onclick = (e) => {
-                e.stopPropagation();
+                e.stopPropagation(); // Prevents the parent li click from firing
                 const idToDelete = e.target.dataset.id;
                 deleteProntuario(idToDelete);
             };
         });
     };
 
-    // NOVA FUNÇÃO: Renderiza os PDFs anexados ao registro principal
+    // Renders PDFs attached to the main record in the detail view
     const renderRecordPdfs = (pdfs) => {
-        recordPdfsList.innerHTML = ''; // Limpa a lista existente
+        recordPdfsList.innerHTML = ''; // Clear existing list
 
         if (!pdfs || pdfs.length === 0) {
             noRecordPdfsMessage.style.display = 'block';
@@ -330,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
             recordPdfsList.appendChild(li);
         });
 
-        // Adiciona event listeners para os novos botões de PDF
+        // Add event listeners for the newly created PDF buttons
         recordPdfsList.querySelectorAll('.view-pdf-button').forEach(button => {
             button.addEventListener('click', (event) => {
                 const pdfUrl = event.currentTarget.dataset.pdfUrl;
@@ -341,25 +373,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-
+    // Renders follow-up entries for a record
     const renderFollowUps = (followUps) => {
         followUpsList.innerHTML = '';
         if (followUps.length === 0) {
-            followUpsList.appendChild(noFollowUpsMessage);
+            // Ensure message is appended if not already, and displayed
+            if (!followUpsList.contains(noFollowUpsMessage)) {
+                followUpsList.appendChild(noFollowUpsMessage);
+            }
             noFollowUpsMessage.style.display = 'block';
             return;
         } else {
             noFollowUpsMessage.style.display = 'none';
         }
 
-        followUps.sort((a, b) => new Date(b.date) - new Date(a.date));
+        followUps.sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by date descending
 
         followUps.forEach((f, index) => {
             const li = document.createElement('li');
             li.className = 'followup-item';
-            li.dataset.index = index; // Adiciona o índice como data attribute para exclusão
+            li.dataset.index = index; // Add index as data attribute for deletion
 
-            // Construir links para múltiplos PDFs de acompanhamento
+            // Build links for multiple follow-up PDFs
             let pdfLinksHtml = '';
             if (f.pdfs && f.pdfs.length > 0) {
                 pdfLinksHtml = f.pdfs.map(pdf => `
@@ -368,7 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </a>
                 `).join('');
             }
-            
+
             li.innerHTML = `
                 <div class="followup-content-wrapper">
                     <span class="followup-date-display">${formatDate(f.date)}:</span>
@@ -389,10 +424,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
-            // Agora, o evento de clique deve ser adicionado ao contêiner que queremos que seja clicável (seja o li inteiro ou uma parte)
-            // O `li` ainda é clicável para abrir o modal de texto
+            // Event listener for the entire LI to open text modal (excluding PDF links and delete button)
             li.onclick = (e) => {
-                // Impede que o clique nos links de PDF ou botão de exclusão ative o modal de texto
                 if (!e.target.closest('.view-followup-pdf') && !e.target.closest('.delete-followup-button')) {
                     showFollowUpModal(formatDate(f.date), f.text, f.pdfs);
                 }
@@ -400,22 +433,20 @@ document.addEventListener('DOMContentLoaded', () => {
             followUpsList.appendChild(li);
         });
 
-        // Adiciona event listeners para os links de PDF e botões de exclusão
-        // Estes eventos são adicionados APÓS a criação dos elementos
+        // Add event listeners for PDF links and delete buttons (delegating if many are added)
         document.querySelectorAll('.view-followup-pdf').forEach(link => {
             link.addEventListener('click', (event) => {
-                event.stopPropagation(); // Impede que o modal do acompanhamento seja aberto
+                event.stopPropagation(); // Prevents the follow-up text modal from opening
                 const pdfUrl = event.currentTarget.dataset.pdfUrl;
                 if (pdfUrl) {
                     openPdfModal(pdfUrl);
                 }
             });
         });
-        
+
         document.querySelectorAll('.delete-followup-button').forEach(button => {
             button.addEventListener('click', (event) => {
-                event.stopPropagation(); // Impede que o modal do acompanhamento seja aberto
-                // Encontra o `li` pai para obter o data-index
+                event.stopPropagation(); // Prevents the follow-up text modal from opening
                 const li = event.currentTarget.closest('.followup-item');
                 if (li) {
                     const followUpIndex = parseInt(li.dataset.index);
@@ -425,16 +456,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    const formatDate = (dateString) => {
-        if (!dateString) return '';
-        const [year, month, day] = dateString.split('-');
-        return `${day}/${month}/${year}`;
-    };
+    // --- Action Functions ---
 
-    // --- Funções de Ação ---
-    const generateId = () => '_' + Math.random().toString(36).substr(2, 9);
-
-    // MODIFICADO: Função saveProntuario para lidar com múltiplos PDFs
+    // Saves a new medical record (prontuario)
     const saveProntuario = async () => {
         const patientName = patientNameInput.value.trim();
         const recordRelate = recordRelateInput.value.trim();
@@ -446,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Lógica para ler múltiplos PDFs do registro principal
+        // Process multiple PDFs for the main record
         const recordPdfsToSave = [];
         for (const file of currentRecordPdfFiles) {
             if (file.type === 'application/pdf') {
@@ -466,14 +490,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(`O arquivo "${file.name}" não é um PDF e será ignorado.`);
             }
         }
-        
+
         const newProntuario = {
             id: generateId(),
             patientName,
             recordRelate,
             appointmentDate,
             medicalRecord: medicalRecord || '',
-            recordPdfs: recordPdfsToSave, // Agora é um array de objetos {dataUrl, fileName}
+            recordPdfs: recordPdfsToSave, // Array of {dataUrl, fileName} objects
             lastModified: new Date().toLocaleDateString('pt-BR'),
             followUps: []
         };
@@ -483,6 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showList();
     };
 
+    // Deletes a medical record
     const deleteProntuario = (idToDelete) => {
         if (confirm('Tem certeza que deseja excluir este prontuário? Esta ação não pode ser desfeita.')) {
             prontuarios = prontuarios.filter(p => p.id !== idToDelete);
@@ -491,29 +516,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // NOVO: Função para excluir um acompanhamento específico
+    // Deletes a specific follow-up from a record
     const deleteFollowUp = (recordId, followUpIndex) => {
         const record = prontuarios.find(p => p.id === recordId);
         if (!record) return;
 
         if (confirm('Tem certeza que deseja excluir este acompanhamento? Esta ação não pode ser desfeita.')) {
-            // Remove o acompanhamento do array pelo seu índice
-            record.followUps.splice(followUpIndex, 1);
-            
-            // Atualiza a data de última modificação do prontuário
-            record.lastModified = new Date().toLocaleDateString('pt-BR');
+            record.followUps.splice(followUpIndex, 1); // Remove follow-up by index
 
-            // Salva as alterações no LocalStorage
+            record.lastModified = new Date().toLocaleDateString('pt-BR'); // Update record's last modified date
             saveProntuarios();
-            
-            // Re-renderiza a lista de acompanhamentos para refletir a exclusão
-            showRecordDetails(record);
-            
+
+            showRecordDetails(record); // Re-render follow-up list to reflect deletion
+
             alert('Acompanhamento excluído com sucesso.');
         }
     };
 
-    // MODIFICAÇÃO: Função saveFollowUp atualizada para lidar com múltiplos PDFs
+    // Saves a new follow-up for the current record
     const saveFollowUp = async () => {
         const followUpDate = followUpDateInput.value;
         const followUpText = followUpTextarea.value.trim();
@@ -525,7 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Lógica para ler múltiplos PDFs do acompanhamento
+        // Process multiple PDFs for the follow-up
         const followUpPdfsToSave = [];
         for (const file of currentFollowupPdfFiles) {
             if (file.type === 'application/pdf') {
@@ -549,18 +569,19 @@ document.addEventListener('DOMContentLoaded', () => {
         recordToUpdate.followUps.push({
             date: followUpDate,
             text: followUpText,
-            pdfs: followUpPdfsToSave // Agora é um array de objetos {dataUrl, fileName}
+            pdfs: followUpPdfsToSave // Array of {dataUrl, fileName} objects
         });
         recordToUpdate.lastModified = new Date().toLocaleDateString('pt-BR');
         saveProntuarios();
         showRecordDetails(recordToUpdate);
     };
 
-    // --- Funções de Ordenação ---
+    // --- Sorting Functions ---
     const sortProntuarios = (arr, sortOrder) => {
         switch (sortOrder) {
             case 'lastModifiedDesc':
                 return [...arr].sort((a, b) => {
+                    // Convert DD/MM/YYYY to YYYY-MM-DD for correct date comparison
                     const dateA = a.lastModified.split('/').reverse().join('-');
                     const dateB = b.lastModified.split('/').reverse().join('-');
                     return new Date(dateB) - new Date(dateA);
@@ -593,13 +614,9 @@ document.addEventListener('DOMContentLoaded', () => {
     deleteRecordButton.addEventListener('click', () => deleteProntuario(currentRecordId));
     sortOrderSelect.addEventListener('change', renderProntuarios);
     closeFollowUpModal.addEventListener('click', hideFollowUpModal);
-
-    // O antigo viewPdfButton não existe mais, a lógica de clique foi movida para renderRecordPdfs
-    // viewPdfButton.addEventListener('click', ...); 
-
     closePdfModal.addEventListener('click', closePdfModalHandler);
 
-    // Evento de clique fora dos modais para fechar
+    // Close modals when clicking outside of them
     window.addEventListener('click', (event) => {
         if (event.target === followUpModal) {
             hideFollowUpModal();
@@ -609,26 +626,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // NOVO Event listener para o input de arquivo do prontuário principal (MÚLTIPLOS)
+    // Event listener for the main record PDF input (multiple files)
     pdfUploadInput.addEventListener('change', (event) => {
-        // Filtra para garantir que apenas PDFs sejam adicionados
+        // Filter to ensure only PDFs are added
         const files = Array.from(event.target.files).filter(file => file.type === 'application/pdf');
-        
+
         if (files.length > 0) {
             currentRecordPdfFiles = files;
             const fileNames = files.map(file => file.name).join(', ');
             selectedRecordPdfsDisplay.textContent = `Arquivo(s) selecionado(s): ${fileNames}`;
         } else {
             currentRecordPdfFiles = [];
-            pdfUploadInput.value = ''; // Limpa o input
+            pdfUploadInput.value = ''; // Clear the input field
             selectedRecordPdfsDisplay.textContent = 'Nenhum arquivo PDF selecionado ou arquivos inválidos.';
             alert('Por favor, selecione apenas arquivos PDF.');
         }
     });
 
-    // NOVO Event listener para o input de arquivo do acompanhamento (MÚLTIPLOS)
+    // Event listener for the follow-up PDF input (multiple files)
     followUpPdfUploadInput.addEventListener('change', (event) => {
-        // Filtra para garantir que apenas PDFs sejam adicionados
+        // Filter to ensure only PDFs are added
         const files = Array.from(event.target.files).filter(file => file.type === 'application/pdf');
 
         if (files.length > 0) {
@@ -637,16 +654,17 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedFollowUpPdfsDisplay.textContent = `Arquivo(s) selecionado(s): ${fileNames}`;
         } else {
             currentFollowupPdfFiles = [];
-            followUpPdfUploadInput.value = ''; // Limpa o input
+            followUpPdfUploadInput.value = ''; // Clear the input field
             selectedFollowUpPdfsDisplay.textContent = 'Nenhum arquivo PDF selecionado ou arquivos inválidos.';
             alert('Por favor, selecione apenas arquivos PDF.');
         }
     });
 
-    // --- Inicialização ---
+    // --- Initialization ---
+    // Set the username in the header
+    if (headerUsername) {
+        headerUsername.textContent = currentUser;
+    }
     loadProntuarios();
-    showList(); // Mostra a lista inicialmente
+    showList(); // Show the list initially
 });
-
-// A função formatDate já existe e está correta.
-// A lógica para `today` já existe no HTML.
